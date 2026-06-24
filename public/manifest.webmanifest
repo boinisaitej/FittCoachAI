@@ -1,0 +1,12 @@
+{
+  "name": "FitCoachAI",
+  "short_name": "FitCoachAI",
+  "description": "AI-powered SaaS for gyms, trainers, and clients.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f0a",
+  "theme_color": "#22c55e",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

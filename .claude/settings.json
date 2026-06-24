@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx supabase *)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(ls *)",
+      "Read(.env.example)"
+    ],
+    "deny": [
+      "Read(.env.local)",
+      "Read(.env)",
+      "Read(.env.production)",
+      "Bash(rm -rf *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/post-edit.js"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "FORCE_COLOR": "1"
+  }
+}

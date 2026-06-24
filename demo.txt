@@ -1,0 +1,640 @@
+================================================================================
+ FitCoachAI - Production Readiness Plan
+ Audience  : Gym Owners / Trainers / Clients
+ Purpose   : (1) List CURRENT useful features already coded in this repo
+             (2) List MORE features required to ship a PRODUCTION-LEVEL,
+                 sellable SaaS to gyms (real email/SMS/Razorpay/etc.)
+ NOTE      : This document is a FEATURE LIST ONLY. Nothing here is
+             implemented yet beyond what is marked in Part A.
+================================================================================
+
+
+================================================================================
+ PART A - CURRENT USEFUL FEATURES (already coded in this repo)
+================================================================================
+
+[A1] ACCOUNTS & LOGIN
+  - 3-role system: Gym Owner, Trainer, Client
+  - First-time gym setup (only first owner can self-register)
+  - Login / Logout / Change password
+  - Owner creates Client accounts (with full profile fields)
+  - Owner creates Trainer accounts (with specialization + type)
+  - Owner can activate / deactivate any non-owner account
+  - Welcome email auto-fired on account creation
+        (template + wiring already in code; SMTP needs config to actually send)
+
+[A2] PLANS (Basic / Pro)
+  - Owner assigns Basic or Pro plan to a client (30-day default)
+  - Owner extends subscription by N days
+  - Owner applies discount %
+  - Auto-extend on 7 / 30 / 90 day streak (+2 / +7 / +14 days)
+
+[A3] CLIENT <-> TRAINER MATCHING
+  - Auto-match by gender + plan rules (female->female, pro->personal)
+  - Manual assign from a filtered dropdown
+  - Owner reassigns trainer (old assignment kept for history)
+  - Live trainer-load table (active clients per trainer)
+  - Client dashboard shows their assigned trainer + quick Message
+
+[A4] CLIENT PREFERENCES
+  - Pick exercise types (chips: cardio, muscle gain, zumba, yoga, weight loss)
+  - Vegetarian toggle (festivals force veg regardless)
+  - AI Diet on/off, AI Workout on/off
+  - Daily water goal (glasses)
+
+[A5] DAILY PLAN (todos)
+  - Trainer builds today's plan (food / exercise / water / sleep rows)
+  - Client checks off todos (Completed / Partial / Skipped)
+  - "Why is this in my plan?" AI explanation popover per row
+  - Trainer grants a cheat day
+
+[A6] CALENDAR
+  - Month grid with green/yellow/red dots
+  - Click date -> day modal with status buttons
+  - 7-day streak strip on dashboard
+
+[A7] DASHBOARDS & CHARTS
+  - Client dashboard (BMI, points, charts, 7-day streak, reports)
+  - Trainer dashboard (KPIs, alerts, auto-progression, broadcast, client grid)
+  - Trainer -> Client deep page (Overview / History / Recommendation /
+    Notes / Send report / Send notification)
+  - 5-second live refresh on critical views
+
+[A8] BMI MONITORING
+  - Log BMI (auto-classification + delta vs previous)
+  - BMI history line chart + table on client dashboard
+
+[A9] HEALTH ISSUES (AI remedies)
+  - Submit problem + severity -> AI returns foods/exercises/tips
+  - Severe reports raise trainer alerts
+
+[A10] CHAT
+  - Three-pane chat (role-aware sidebar)
+  - Trainer <-> Client + Owner <-> any + AI tab
+  - AI Chat with sessions sidebar + history (Pro = unlimited,
+    Basic = 10/day, resets at midnight)
+  - Right-click bubble: Copy / Delete
+  - Trainer broadcast to all clients (chat + bell)
+
+[A11] AI-GENERATED PLANS
+  - AI Diet (single day) - 4 meal cards w/ recipe pencil
+  - AI Diet (full week)
+  - Regenerate single meal with feedback
+  - AI Workout (single day + full week)
+  - Apply-to-today one-click
+  - Injury-aware filtering
+  - AI motivational ping banner
+  - AI Recipe on demand (Pro)
+  - AI Food Scanner (Pro)
+  - AI auto-progression proposals every Monday 06:00
+
+[A12] NUTRITION KNOWLEDGE BASE
+  - FAISS-backed RAG search + history sidebar
+  - Source snippets shown with score
+  - "Vector live" vs "Fallback" indicator
+
+[A13] AI GROCERY LIST
+  - Generate from date range -> grouped by category + INR totals
+  - History sidebar (Rename / Duplicate / Delete)
+  - Checklist mode with progress bar
+
+[A14] JUNK FOOD / WATER / SLEEP TRACKERS
+  - Log junk food (weekly trend + trainer alert on threshold)
+  - Water +1/-1 quick buttons + week bar chart
+  - Sleep hours + notes (sleep_low alert if < 6h)
+  - Trainer alerts inbox (sleep_low / severe_health / injury / junk_excess)
+
+[A15] INJURIES
+  - Client reports injury (tag + severity + notes)
+  - Future AI workouts auto-exclude conflicting exercises
+  - Trainer resolves -> re-include exercises
+
+[A16] PROGRESS PHOTOS
+  - Upload Before / Progress / After (with notes)
+  - Before vs After side-by-side compare card
+
+[A17] INVOICES & REPORTS (PDFs)
+  - Owner issues invoice -> client gets bell + PDF in profile
+  - Weekly adherence report (Pro) emailed/listed in client dashboard
+  - Trainer weekly summary aggregator (saved AI paragraph)
+
+[A18] NOTIFICATIONS, ANNOUNCEMENTS, EMAIL
+  - In-app bell + /notifications page (bulk delete, mark read, clear)
+  - Trainer immediate / scheduled / recurring notifications
+  - Owner announcement (audience + scheduled) - bell + email
+  - Welcome email + plan-assigned email (templates exist)
+  - Web push (VAPID scaffold) - reminds even with tab closed
+
+[A19] GAMIFICATION
+  - Points per todo (10 / 4)
+  - Streak milestone rewards (7/30/90-day -> subscription extension)
+
+[A20] RATINGS
+  - Weekly mutual rating (client rates trainer + trainer rates client)
+
+[A21] FESTIVALS / VEG ENFORCEMENT
+  - Festival-aware diet banner + forced veg on those dates
+
+[A22] SLOGAN BANNER
+  - Animated slogan strip on every page (22 defaults + AI-generated)
+
+[A23] PROFILE PAGE
+  - Single template, role-tailored Key/Value table
+  - Owner edits gym name + address (propagates to invoices + emails)
+  - Client "My invoices" tab
+
+[A24] OWNER CONSOLE
+  - KPI row + numbered step-by-step cards (create, assign, reassign,
+    trainer load, all users, invoices, announcements, slogans)
+
+[A25] BACKGROUND JOBS
+  - Every-minute scheduler for announcements + trainer notifications
+  - Monday 06:00 auto-progression proposals
+  - KB index warm-up on startup
+  - Sleep / junk / stale-todo / weekly-report monitors
+
+[A26] DEMO TOOLS
+  - Seed-demo command + smoke-test scripts
+
+
+================================================================================
+ PART B - FEATURES TO IMPLEMENT FOR PRODUCTION (sellable to gyms)
+================================================================================
+
+Goal: every feature works end-to-end with REAL email, REAL SMS/WhatsApp,
+REAL Razorpay payments, on real infrastructure, multi-tenant, secure,
+and a gym owner can sign up + onboard in 10 minutes.
+
+--------------------------------------------------------------------------------
+ B1. PRODUCTION EMAIL (sending + receiving + tracking)
+--------------------------------------------------------------------------------
+  [ ] Move SMTP from Gmail -> SendGrid / AWS SES / Mailgun (transactional)
+  [ ] Verify custom domain (SPF + DKIM + DMARC) to avoid spam folder
+  [ ] Branded HTML templates (gym logo, primary color, CTA button)
+        - Welcome / account created
+        - Password reset
+        - Plan assigned
+        - Weekly progress report (with PDF attached)
+        - Invoice issued
+        - Payment success
+        - Payment failed / membership expiring
+        - Owner announcement
+        - Trainer broadcast
+  [ ] email_log table: to, subject, status, provider_message_id,
+      opened_at, clicked_at, bounced_at, error
+  [ ] Inbound webhook /webhooks/email for SendGrid delivery / open /
+      bounce / complaint events -> updates email_log
+  [ ] Owner dashboard: "Delivered / Opened / Bounced" pill per invite
+  [ ] "Resend invite" button per user
+  [ ] Forgot password flow with signed token (30-min expiry)
+  [ ] First-login forced password change (temp pw expires in 7 days)
+  [ ] Email rate-limit per user (max 20/day) to prevent abuse
+  [ ] Suppression list (auto-deactivate hard-bounced addresses)
+  [ ] List-Unsubscribe header + one-click unsubscribe for marketing
+  [ ] Inbound parsing (optional): replies to support@gym -> ticket queue
+  [ ] Daily trainer digest email (today's plans + missed clients)
+  [ ] Weekly client digest email (their adherence + next week preview)
+  [ ] All emails localizable (English / Hindi / Telugu / Tamil)
+
+--------------------------------------------------------------------------------
+ B2. SMS + WHATSAPP CHANNEL
+--------------------------------------------------------------------------------
+  [ ] Twilio integration (international SMS + WhatsApp)
+  [ ] Gupshup / MSG91 integration (India - cheaper)
+  [ ] OTP login via SMS / WhatsApp (most gym clients don't check email)
+  [ ] Account-created WhatsApp invite (login link + temp password)
+  [ ] Plan-assigned WhatsApp message with deep link to today's plan
+  [ ] Missed-workout nudge at 8 PM if no check-in today
+  [ ] Payment-due reminder 3 days before expiry (SMS + WhatsApp)
+  [ ] Owner SMS broadcast (max 1/day per client, STOP keyword to opt-out)
+  [ ] DLT template registration helper (India compliance)
+  [ ] Delivery-status callback -> sms_log table
+
+--------------------------------------------------------------------------------
+ B3. RAZORPAY PAYMENTS (full lifecycle)
+--------------------------------------------------------------------------------
+  [ ] Razorpay account onboarding (KYC, settlement bank, brand)
+  [ ] Razorpay Orders API for membership purchase
+  [ ] Checkout page in client app (Razorpay Standard Checkout JS SDK)
+  [ ] Webhook /webhooks/razorpay - signature verification (HMAC SHA256)
+        Events: payment.captured, payment.failed, refund.processed,
+                subscription.activated, subscription.charged,
+                subscription.halted, subscription.cancelled
+  [ ] Razorpay Subscriptions for auto-renew memberships
+        - Monthly / Quarterly / Annual plans
+        - Razorpay Plan + Subscription objects synced to local DB
+  [ ] Payment Links (UPI / card) for one-off renewals via email/WhatsApp
+  [ ] Saved cards / UPI tokens via Razorpay (re-billing without re-entry)
+  [ ] Auto-deactivate client account on payment failure
+        - 3-day grace + 3 reminders (email + WhatsApp)
+        - Re-activate on successful retry
+  [ ] Refund flow from Owner Console -> Razorpay Refund API
+  [ ] Invoice PDF auto-emailed on payment.captured
+        - GSTIN + HSN/SAC + GST split fields (India compliance)
+        - Sequential invoice number (FY-based reset)
+  [ ] Trainer commission report (CSV / PDF export)
+  [ ] Owner-level SaaS subscription (per active client / month) - billed
+      to YOU via a separate Razorpay merchant account
+  [ ] Razorpay Smart Collect / Virtual Accounts (optional: NEFT/IMPS)
+  [ ] Razorpay Dispute / Chargeback handler -> Owner Console
+  [ ] Settlement reconciliation report (daily payouts vs ledger)
+  [ ] Failed-payment retry queue (exponential backoff)
+  [ ] Test mode flag + Razorpay test keys for staging env
+
+--------------------------------------------------------------------------------
+ B4. MULTI-TENANCY (one deployment, many gyms)
+--------------------------------------------------------------------------------
+  [ ] gym_id column on every domain table (users, assignments, plans,
+      todos, chat, notifications, invoices, photos, ...)
+  [ ] Tenant-scoping middleware - every query auto-filtered by gym_id
+  [ ] Owner signup wizard: gym name, slug, logo, primary color,
+      currency, timezone, language
+  [ ] Subdomain routing <gym-slug>.fitcoach.ai (or /<slug>/ path)
+  [ ] Custom domain support (CNAME + automatic Let's Encrypt) - premium
+  [ ] Per-tenant settings: business hours, holidays, sender email
+  [ ] Cross-tenant access audit log
+  [ ] Migration script to retro-fit gym_id=1 on existing rows
+  [ ] Super-admin (you) console: list gyms, MRR, suspend gym, impersonate
+
+--------------------------------------------------------------------------------
+ B5. ONBOARDING & GROWTH
+--------------------------------------------------------------------------------
+  [ ] Public marketing site: /, /pricing, /demo, /contact, /privacy, /tos
+  [ ] Self-serve owner signup + 14-day free trial (no card needed)
+  [ ] In-app product tour (Shepherd.js) for owner / trainer / client
+  [ ] Bulk-import trainers + clients via CSV (one click sends all invites)
+  [ ] Sample-data button: 5 trainers + 30 clients + plans to demo with
+  [ ] Lead capture page per gym: gym.com/<slug>/join (walk-in form ->
+      pending client + owner gets notified)
+  [ ] Referral program: client invites friend -> both get 10% discount
+  [ ] Affiliate program for fitness influencers
+  [ ] Email/WhatsApp drip campaign for trial users (day 1/3/7/13)
+
+--------------------------------------------------------------------------------
+ B6. MOBILE & UX
+--------------------------------------------------------------------------------
+  [ ] Progressive Web App (PWA): installable, offline shell, service worker
+  [ ] Native-feeling bottom tab bar for client app
+  [ ] Web push via VAPID for production (already scaffolded)
+  [ ] Apple iOS push via APNS bridge (for installed PWA)
+  [ ] Dark mode toggle (auto + manual + per-user persisted)
+  [ ] i18n: English / Hindi / Telugu / Tamil
+  [ ] Regional-language diet plans + UI copy
+  [ ] QR-code kiosk attendance (tablet at gym entrance)
+  [ ] Biometric (Face ID / fingerprint) login for the PWA
+
+--------------------------------------------------------------------------------
+ B7. AI / ML UPGRADES
+--------------------------------------------------------------------------------
+  [ ] Voice-input AI coach (Whisper STT + gTTS / ElevenLabs TTS)
+  [ ] Photo-based food logging (snap meal -> calories/macros)
+  [ ] Progress-photo body-fat estimator + side-by-side slider
+  [ ] Smartwatch sync: Google Fit + Apple HealthKit + Fitbit + Mi Band
+        - Steps, HR, sleep, active minutes, calories burned
+  [ ] Plateau detector (flat weight/strength for 2 weeks -> trainer alert)
+  [ ] Auto exercise substitution (knee injury -> swap squats with
+      glute bridge, leg press, etc.)
+  [ ] AI form-check from short video clip (squat depth, back angle)
+  [ ] Personalized supplement guidance (with safety + disclaimers)
+  [ ] Multilingual AI coach (auto-detect user language)
+  [ ] Eval harness extended: regression-test prompts on every deploy
+
+--------------------------------------------------------------------------------
+ B8. SECURITY & COMPLIANCE
+--------------------------------------------------------------------------------
+  [ ] Move secrets out of .env in repo -> env vars / secret manager
+  [ ] Rate limit on /auth/login (already partial) -> all public endpoints
+  [ ] 2FA (TOTP) mandatory for Owner accounts
+  [ ] 2FA optional for Trainers
+  [ ] Audit log table - every owner/trainer admin action recorded
+  [ ] Soft-delete + GDPR / DPDP "delete my data" endpoint (30-day window)
+  [ ] Privacy Policy + Terms of Service pages (mandatory for health data)
+  [ ] Cookie consent banner (EU GDPR) + India DPDP Act notice
+  [ ] Sentry / GlitchTip error tracking + structured JSON logs
+  [ ] Daily encrypted DB backup -> S3 / GDrive
+  [ ] CSRF tokens on every state-changing form
+  [ ] Strict Content-Security-Policy header
+  [ ] HTTPS-only cookies (Secure + HttpOnly + SameSite=Lax)
+  [ ] Brute-force lockout (5 fails -> 15-min cooldown)
+  [ ] Periodic penetration test / OWASP ZAP scan in CI
+  [ ] HIPAA-style data-handling policy for health data
+  [ ] PCI scope kept zero (Razorpay holds card data, not us)
+
+--------------------------------------------------------------------------------
+ B9. DEPLOYMENT INFRASTRUCTURE
+--------------------------------------------------------------------------------
+  [ ] Migrate SQLite -> Postgres (Neon / Supabase / RDS)
+  [ ] Docker + docker-compose: web / worker / scheduler / redis / postgres
+  [ ] Background worker (RQ or Celery + Redis) for email / SMS / PDF
+  [ ] Render / Railway / AWS Lightsail / DigitalOcean App Platform
+  [ ] Cloudflare DNS + Let's Encrypt wildcard TLS
+  [ ] /healthz endpoint + UptimeRobot ping every 5 min
+  [ ] GitHub Actions CI: pytest + smoke + eval on every PR
+  [ ] Auto-deploy on main push
+  [ ] Blue-green or rolling restart (zero downtime)
+  [ ] Object storage for photos/PDFs (S3 / Cloudflare R2 + CDN)
+  [ ] Redis cache for hot reads (dashboards, AI responses)
+  [ ] Log aggregation (Logtail / Better Stack / Datadog)
+  [ ] Metrics dashboard (Grafana + Prometheus)
+
+--------------------------------------------------------------------------------
+ B10. GYM-OWNER MONETIZATION TOOLS
+--------------------------------------------------------------------------------
+  [ ] Group-class scheduler (Zumba / CrossFit / Yoga slots + capacity)
+  [ ] Class booking with waitlist + cancellation rules
+  [ ] Attendance heatmap (busiest hours / days)
+  [ ] Trainer payroll export (CSV / PDF) - top retention feature
+  [ ] Lead pipeline: walk-in -> trial -> paid (Kanban + conversion funnel)
+  [ ] Owner-side analytics: MRR, churn %, retention curve, LTV
+  [ ] White-label option: custom logo + custom domain (premium tier)
+  [ ] Multi-branch support (one owner, many gym locations)
+  [ ] Inventory module (supplements, merchandise) with POS-lite
+  [ ] Locker / equipment booking
+  [ ] Trainer rating leaderboard (for owner to spot top performers)
+  [ ] Diet pack add-on sales (premium meal plans as one-time purchase)
+
+
+================================================================================
+ PART C - 12-WEEK ROADMAP (recommended order)
+================================================================================
+
+  WEEK 1-2   B1   Production email (SendGrid + branded templates + email_log)
+  WEEK 3     B1   Forgot-password + first-login reset + email tracking
+                  B2   Twilio / Gupshup OTP + invite WhatsApp
+  WEEK 4     B3   Razorpay orders + checkout + webhook + invoice PDF
+  WEEK 5     B3   Razorpay Subscriptions (auto-renew) + grace + refunds
+  WEEK 6-7   B4   Multi-tenancy gym_id + owner signup wizard + slug routing
+  WEEK 8     B5   Bulk CSV import + landing page + free-trial flow
+  WEEK 9     B6   PWA + dark mode + i18n base + QR kiosk
+  WEEK 10    B8   Security hardening + 2FA + audit log + DPDP banner
+                  B9   Postgres + Docker + background worker
+  WEEK 11    B10  Group classes + payroll + analytics
+  WEEK 12    Pilot with 1-2 gyms, fix what breaks, then sell.
+
+
+================================================================================
+ PART D - CONFIG CHANGES TO TURN EMAIL ON RIGHT NOW (zero new code)
+================================================================================
+
+Append to .env:
+
+    MAIL_ENABLED=1
+    SMTP_HOST=smtp.sendgrid.net        (or smtp.gmail.com for a quick test)
+    SMTP_PORT=587
+    SMTP_USER=apikey                   (literal word "apikey" for SendGrid)
+    SMTP_PASS=<sendgrid-api-key>
+    MAIL_FROM=FitCoachAI <noreply@yourdomain.com>
+    APP_NAME=FitCoachAI
+
+After saving + restarting Flask:
+  - Owner creates Trainer  -> trainer receives "your account is ready" email
+  - Owner creates Client   -> client receives "your account is ready" email
+  - Trainer assigns plan   -> client receives "new plan for <date>" email
+  - Owner announces        -> recipients receive "announcement" email
+
+
+================================================================================
+ PART E - RAZORPAY ENV / KEYS TO PROVISION (when ready)
+================================================================================
+
+Add to .env (DO NOT commit real keys to git):
+
+    RAZORPAY_ENABLED=1
+    RAZORPAY_KEY_ID=rzp_live_xxxxxxxxxxxxxx
+    RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
+    RAZORPAY_WEBHOOK_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
+    RAZORPAY_CURRENCY=INR
+    RAZORPAY_COMPANY_NAME=FitCoachAI
+    RAZORPAY_COMPANY_LOGO=https://yourdomain.com/logo.png
+    GST_NUMBER=29ABCDE1234F1Z5
+    GST_PERCENT=18
+
+Endpoints to expose (when implemented):
+    POST /api/billing/orders            - create order
+    POST /api/billing/verify            - client-side success callback
+    POST /webhooks/razorpay             - server-side webhook (signed)
+    GET  /api/billing/subscriptions     - list active subs
+    POST /api/billing/refund            - owner-initiated refund
+    GET  /api/billing/invoices/<id>.pdf - signed invoice download
+
+
+================================================================================
+ END OF d.txt
+ 90+ current features cataloged.  100+ production features planned.
+================================================================================
+
+
+================================================================================
+ PART F - WHAT MODERN GYMS ARE OFFERING NOWADAYS (market reference)
+ (Use this list as the bar to clear when selling FitCoachAI to a gym.
+  Every item here is something a gym client now expects out-of-the-box.)
+================================================================================
+
+--------------------------------------------------------------------------------
+ F1. MEMBERSHIP & ACCESS
+--------------------------------------------------------------------------------
+  - QR-code / RFID / face-recognition gym entry
+  - Biometric (fingerprint) attendance
+  - Smart-lock locker access via mobile app
+  - 24x7 unmanned access for premium members
+  - Day-pass / trial-pass / guest-pass purchase via app
+  - Pause / freeze membership (vacation, illness, travel)
+  - Multi-branch access on one membership
+  - Couple / family / corporate plans
+  - Student / senior-citizen / women-only discount tiers
+  - Auto-renew via UPI / card / wallet / Razorpay Subscriptions
+  - Membership card on Apple Wallet / Google Wallet
+  - Birthday month free pass / loyalty perks
+
+--------------------------------------------------------------------------------
+ F2. WORKOUT & TRAINING SERVICES
+--------------------------------------------------------------------------------
+  - Personal Training (PT) sessions with session-pack purchase
+  - Small-group training (3-6 members)
+  - Group classes: Zumba, Aerobics, HIIT, CrossFit, Pilates, Spinning,
+    Kickboxing, MMA, Body Combat, Body Pump, TRX, Calisthenics
+  - Yoga, Power Yoga, Hot Yoga, Aerial Yoga
+  - Meditation + breathwork + sound-healing rooms
+  - Functional training zone (battle ropes, sleds, tires)
+  - Olympic / strength corner (deadlift platform, squat rack)
+  - Boxing ring / heavy bags
+  - Indoor cycling studio (Peloton-style with leaderboards)
+  - Swimming pool + aqua aerobics
+  - Sauna / steam room / ice bath / cold plunge
+  - Contrast therapy + infrared sauna
+  - Senior-fitness / rehab / physiotherapy track
+  - Pre-natal & post-natal training
+  - Kids' fitness / summer-camp programs
+
+--------------------------------------------------------------------------------
+ F3. NUTRITION & WELLNESS
+--------------------------------------------------------------------------------
+  - In-house nutritionist / dietitian consultation
+  - Custom meal plans (weight loss / muscle gain / diabetic / PCOS / keto /
+    vegan / Jain / intermittent fasting)
+  - In-gym healthy cafe / juice bar / protein shake counter
+  - Tiffin / meal-prep delivery partnership
+  - Supplement store (whey, BCAA, creatine, multivitamin) with member discount
+  - InBody / body-composition scan (monthly)
+  - DEXA scan partnership for body-fat %
+  - Blood-test / lipid-profile partnership
+  - Diet-photo-log review by dietitian
+  - Hydration coaching + electrolyte stations
+
+--------------------------------------------------------------------------------
+ F4. RECOVERY & THERAPY
+--------------------------------------------------------------------------------
+  - Sports massage / deep tissue massage
+  - Physiotherapy + injury rehab on premises
+  - Chiropractic care
+  - Stretching / mobility coach
+  - Foam-roller + percussive-therapy (Theragun) zone
+  - Compression-boot recovery (NormaTec style)
+  - Cryotherapy chamber
+  - Red-light / infrared therapy
+
+--------------------------------------------------------------------------------
+ F5. APP / TECH FEATURES (what members expect on the gym's app)
+--------------------------------------------------------------------------------
+  - One-app login with mobile OTP
+  - Class booking + waitlist + auto-allocate
+  - Cancel class within X hours -> credit back
+  - In-app PT session booking with trainer calendar
+  - Trainer profile + ratings + photos + specializations
+  - Live class capacity ("12 / 20 slots left")
+  - Reminder push: "Class starts in 30 min"
+  - Workout-of-the-day (WOD) feed
+  - Video library: exercise form, follow-along workouts, recipes
+  - Live streamed classes (for at-home members)
+  - On-demand pre-recorded class library
+  - Habit tracker (water, sleep, steps, meals)
+  - AI chatbot for member queries
+  - In-app chat with trainer / front desk
+  - Refer-a-friend with shareable link + reward
+  - Loyalty points + redeemable rewards
+  - Leaderboards (weekly steps, class attendance, weight lifted)
+  - Streaks + badges + achievement unlocks
+  - Personalized progress dashboard
+  - Smart-watch sync (Apple Health / Google Fit / Fitbit / Garmin / Mi)
+  - Heart-rate zone display during class (Myzone / Polar belts)
+  - Before / After photo timeline
+  - Goal setting with weekly check-ins
+  - Goal-based programs (e.g. "Run your first 5K in 8 weeks")
+  - Push reminders for workouts, water, meals, sleep
+  - WhatsApp / SMS booking confirmations
+  - Digital membership card with QR
+  - Locker assignment via app
+  - Towel / equipment request from app
+
+--------------------------------------------------------------------------------
+ F6. AI-POWERED FEATURES (newest competitive layer in 2024-2026)
+--------------------------------------------------------------------------------
+  - AI form-check from phone camera (squat depth, plank alignment)
+  - AI rep-counter from camera
+  - AI food-photo calorie estimate
+  - AI personalized workout plan auto-generated weekly
+  - AI personalized diet plan auto-adjusted on weight trend
+  - AI plateau detector + auto-progression
+  - AI injury substitution (swap movement that loads injured joint)
+  - AI voice coach during workout ("3 more reps, slow on the way down")
+  - AI motivational ping + daily check-in chat
+  - AI body-composition estimate from progress photos
+  - AI recommendation: "members like you also did this class"
+  - Mood + stress journaling with AI reflection
+  - AI sleep-quality analyzer (from wearable data)
+  - AI churn-risk prediction (gym owner sees who's about to quit)
+  - AI lead scoring (which walk-in is likely to convert)
+
+--------------------------------------------------------------------------------
+ F7. COMMUNITY & ENGAGEMENT
+--------------------------------------------------------------------------------
+  - In-app social feed (post wins, transformations, PRs)
+  - 30-day / 60-day / 90-day transformation challenges
+  - Step-count challenges with prizes
+  - Weight-loss / muscle-gain challenges with leaderboard
+  - Member-of-the-month + trainer-of-the-month
+  - Workshops: nutrition, mobility, mindset, first-aid
+  - Run clubs / outdoor bootcamps / hiking events
+  - Charity runs / fundraising events
+  - Member meetups + birthday celebrations
+  - Couple / partner workouts on Valentine's etc.
+  - Festival-themed challenges (Diwali Dhamaka, New Year shred)
+
+--------------------------------------------------------------------------------
+ F8. RETAIL & ANCILLARY REVENUE
+--------------------------------------------------------------------------------
+  - Branded merchandise (t-shirts, hoodies, shakers, bags)
+  - Supplement & protein sales
+  - Healthy ready-meal sales
+  - Personal-care: gym towel rental, shower kits
+  - Gift cards / e-vouchers
+  - Corporate wellness contracts (B2B)
+  - Insurance / cashback tie-ups (Cult.fit, HealthifyMe, Practo)
+  - Brand sponsorships (Gatorade, MuscleBlaze) inside the gym
+
+--------------------------------------------------------------------------------
+ F9. SAFETY, HYGIENE & FACILITY
+--------------------------------------------------------------------------------
+  - Sanitization station at every rack
+  - Air-purifier + air-quality display
+  - CCTV with live monitoring
+  - AED + first-aid kit + trained staff
+  - Trained lifeguard at pool
+  - Childcare / creche while parent works out
+  - Wi-Fi + charging stations + lounge area
+  - Reserved parking for members
+  - EV-charging slots
+  - Female-only workout hours / women-only floor
+
+--------------------------------------------------------------------------------
+ F10. PAYMENTS & PRICING INNOVATIONS
+--------------------------------------------------------------------------------
+  - UPI Autopay / Razorpay Subscriptions for auto-renew
+  - EMI on annual memberships (no-cost EMI partnerships)
+  - BNPL (Buy Now Pay Later) - Simpl, LazyPay, ZestMoney
+  - Pay-per-class (no membership) for casual users
+  - Pay-per-day / drop-in pricing
+  - Off-peak discount slots (10 AM - 4 PM cheaper)
+  - Couple / referral / corporate / student tier pricing
+  - Cashback wallets, loyalty points, redeemable credits
+  - Gift a membership (e-gift card)
+  - Insurance reimbursement support (claims paperwork)
+
+--------------------------------------------------------------------------------
+ F11. GYM OWNER / OPERATIONS SIDE
+--------------------------------------------------------------------------------
+  - CRM with lead pipeline (walk-in -> trial -> paid)
+  - Auto follow-up sequence for inactive leads
+  - Trainer roster + shift scheduling
+  - Trainer payroll + commission auto-calc
+  - PT-session pack tracking (used / remaining)
+  - Inventory: supplements + merchandise + cleaning
+  - Equipment maintenance log
+  - Footfall / occupancy heatmap by hour & day
+  - Class-utilization report
+  - Membership analytics: MRR, churn %, LTV, retention curve
+  - Daily revenue + settlement dashboard
+  - SMS / WhatsApp marketing campaigns
+  - Bulk announcement to all members
+  - Lead source tracking (Google / Instagram / referral / walk-in)
+  - Trainer feedback ratings + reviews monitoring
+  - Google Business Profile + review request automation
+  - Refund / dispute / cancellation workflow
+  - GST-compliant invoicing + accounting export (Tally / Zoho Books)
+  - Multi-branch consolidated reporting
+  - Franchise / white-label dashboard
+
+
+================================================================================
+ NOTE
+ The features in PART F describe the current MARKET BAR. FitCoachAI does
+ not need to ship every one of them - but anything missing from PART A or
+ PART B compared to PART F is a potential gap that competitors will use to
+ win the deal. Pick the highest-leverage ones and add them to PART B.
+================================================================================
+
+================================================================================
+ END OF d.txt
+================================================================================
+trainer@fitcoach.demo
+Trainer@12345

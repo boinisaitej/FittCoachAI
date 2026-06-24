@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/tick", "schedule": "* * * * *" },
+    { "path": "/api/cron/auto-progression", "schedule": "0 6 * * 1" },
+    { "path": "/api/cron/weekly-reports", "schedule": "0 18 * * 0" }
+  ]
+}
