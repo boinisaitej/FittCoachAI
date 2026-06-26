@@ -26,14 +26,14 @@ export async function saveProfileAction(input: { profile: ProfilePatch; gym?: Gy
   const user = await requireUser();
   const supabase = createClient();
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from("profiles")
     .update({ ...input.profile, updated_at: new Date().toISOString() })
     .eq("id", user.id);
   if (error) return { ok: false, error: error.message };
 
   if (user.role === "owner" && user.gym_id && input.gym) {
-    const { error: gErr } = await supabase
+    const { error: gErr } = await (supabase as any)
       .from("gyms")
       .update({ name: input.gym.name, address: input.gym.address })
       .eq("id", user.gym_id);
