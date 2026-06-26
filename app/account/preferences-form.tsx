@@ -80,13 +80,19 @@ export function PreferencesForm({ initial }: { initial: Prefs | null }) {
     start(async () => {
       const supabase = createClient();
       const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return toast.error("Not authenticated");
-      const { error } = await supabase.from("client_preferences").upsert({
+      if (!u.user) {
+        toast.error("Not authenticated");
+        return;
+      }
+      const { error } = await (supabase as any).from("client_preferences").upsert({
         ...prefs,
         allergies: allergies, // ensure normalized array
         client_id: u.user.id,
       });
-      if (error) return toast.error("Failed", { description: error.message });
+      if (error) {
+        toast.error("Failed", { description: error.message });
+        return;
+      }
       toast.success("Preferences saved");
       router.refresh();
     });
