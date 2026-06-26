@@ -18,30 +18,30 @@ export default async function AccountPage() {
   const admin = createServiceClient();
 
   const [{ data: profile }, { data: prefs }, { data: gym }] = await Promise.all([
-    admin
+    (admin as any)
       .from("profiles")
       .select("id,full_name,email,phone,gender,dob,height_cm,weight_kg,language,role,gym_id")
       .eq("id", user.id)
       .maybeSingle(),
     user.role === "client"
-      ? supabase.from("client_preferences").select("*").eq("client_id", user.id).maybeSingle()
+      ? (supabase as any).from("client_preferences").select("*").eq("client_id", user.id).maybeSingle()
       : Promise.resolve({ data: null }),
     user.gym_id
-      ? supabase.from("gyms").select("name,address,primary_color").eq("id", user.gym_id).maybeSingle()
+      ? (supabase as any).from("gyms").select("name,address,primary_color").eq("id", user.gym_id).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
 
   /* Client extra: assigned trainer (so the client can see who their coach is) */
   let assignedTrainer: { full_name: string | null; email: string | null; phone: string | null; specialization: string | null } | null = null;
   if (user.role === "client") {
-    const { data: assign } = await admin
+    const { data: assign } = await (admin as any)
       .from("trainer_clients")
       .select("trainer_id")
       .eq("client_id", user.id)
       .is("ended_at", null)
       .maybeSingle();
     if (assign?.trainer_id) {
-      const { data: t } = await admin
+      const { data: t } = await (admin as any)
         .from("profiles")
         .select("full_name,email,phone,specialization")
         .eq("id", assign.trainer_id)
