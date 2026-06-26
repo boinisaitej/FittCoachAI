@@ -50,7 +50,10 @@ export function AccountForm({
         },
         gym: p.role === "owner" ? { name: g.name, address: g.address } : null,
       });
-      if (!res.ok) return toast.error("Profile save failed", { description: res.error });
+      if (!res.ok) {
+        toast.error("Profile save failed", { description: res.error });
+        return;
+      }
       toast.success("Saved — everyone in your gym will see the update.");
       router.refresh();
     });
