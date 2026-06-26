@@ -28,7 +28,7 @@ export default function ChangePasswordPage() {
       setLoading(false);
       return toast.error("Failed to change password", { description: error.message });
     }
-    await supabase
+    await (supabase as any)
       .from("profiles")
       .update({ must_change_password: false })
       .eq("id", (await supabase.auth.getUser()).data.user!.id);
