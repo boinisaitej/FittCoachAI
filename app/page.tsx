@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Dumbbell, Sparkles, ShieldCheck, Bot, Activity, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FadeIn, Float, Stagger } from "@/components/animations/fade-in";
+
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
